@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Persistent Heart Calendar</title>
+    <style>
+        :root {
+            --bg-color: #fff0f5;
+            --calendar-bg: rgba(255, 255, 255, 0.85);
+            --accent-color: #ff6b81;
+            --stamp-color: #ff4757;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+
+        body {
+            background-color: var(--bg-color);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- Floating Hearts Background --- */
+        .bg-animation {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .heart {
+            position: absolute;
+            color: var(--accent-color);
+            opacity: 0.4;
+            animation: float 12s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(110vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* --- Calendar Layout --- */
+        .calendar-container {
+            width: 95vw;
+            height: 90vh;
+            background: var(--calendar-bg);
+            backdrop-filter: blur(12px);
+            border-radius: 24px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            border: 2px solid white;
+        }
+
+        header {
+            text-align: center;
+            padding: 10px 0;
+            color: var(--accent-color);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            grid-template-rows: auto repeat(5, 1fr);
+            gap: 8px;
+            flex-grow: 1;
+        }
+
+        .day-name {
+            font-weight: 700;
+            text-align: center;
+            color: #999;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        .day {
+            background: white;
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.3rem;
+            font-weight: 600;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.1s;
+            border: 1px solid #f0f0f0;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .day:active { transform: scale(0.95); }
+
+        /* --- Stamp Design --- */
+        .stamp {
+            position: absolute;
+            width: 70%;
+            height: 70%;
+            background: var(--stamp-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            animation: slam 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+            border: 2px dashed rgba(255,255,255,0.5);
+            opacity: 0.9;
+        }
+
+        @keyframes slam {
+            0% { transform: scale(3) rotate(30deg); opacity: 0; }
+            100% { transform: scale(1) rotate(0deg); opacity: 0.9; }
+        }
+
+        @media (max-width: 600px) {
+            .calendar-container { height: 85vh; width: 98vw; padding: 10px; }
+            .day { font-size: 1.1rem; border-radius: 10px; }
+            .calendar-grid { gap: 5px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-animation" id="bgLayer"></div>
+
+    <div class="calendar-container">
+        <header>
+            <h2 id="monthDisplay">March 2026</h2>
+        </header>
+        <div class="calendar-grid" id="calendarGrid">
+            <div class="day-name">Sun</div><div class="day-name">Mon</div>
+            <div class="day-name">Tue</div><div class="day-name">Wed</div>
+            <div class="day-name">Thu</div><div class="day-name">Fri</div>
+            <div class="day-name">Sat</div>
+        </div>
+    </div>
+
+    <script>
+        const grid = document.getElementById('calendarGrid');
+        const storageKey = 'calendarStamps_March2026';
+        
+        // Load stamped days from LocalStorage or start fresh
+        let stampedDays = JSON.parse(localStorage.getItem(storageKey)) || [];
+
+        // 1. Create Floating Hearts
+        function initHearts() {
+            const bg = document.getElementById('bgLayer');
+            for (let i = 0; i < 15; i++) {
+                const heart = document.createElement('div');
+                heart.className = 'heart';
+                heart.innerHTML = '❤';
+                heart.style.left = Math.random() * 100 + 'vw';
+                heart.style.fontSize = (Math.random() * 15 + 15) + 'px';
+                heart.style.animationDuration = (Math.random() * 5 + 7) + 's';
+                heart.style.animationDelay = (Math.random() * 5) + 's';
+                bg.appendChild(heart);
+            }
+        }
+
+        // 2. Build Calendar and Apply Saved Stamps
+        function initCalendar() {
+            const daysInMonth = 31;
+            for (let i = 1; i <= daysInMonth; i++) {
+                const daySquare = document.createElement('div');
+                daySquare.classList.add('day');
+                daySquare.innerText = i;
+                daySquare.dataset.dayNum = i;
+
+                // Check if this day was previously stamped
+                if (stampedDays.includes(i)) {
+                    addStampElement(daySquare, false); // false = no animation on load
+                }
+
+                daySquare.addEventListener('click', () => toggleStamp(i, daySquare));
+                grid.appendChild(daySquare);
+            }
+        }
+
+        // 3. Toggle Stamp Logic
+        function toggleStamp(dayNum, element) {
+            const index = stampedDays.indexOf(dayNum);
+            
+            if (index > -1) {
+                // Remove stamp
+                stampedDays.splice(index, 1);
+                const stamp = element.querySelector('.stamp');
+                if (stamp) stamp.remove();
+            } else {
+                // Add stamp
+                stampedDays.push(dayNum);
+                addStampElement(element, true);
+                if (window.navigator.vibrate) window.navigator.vibrate(30);
+            }
+
+            // Save to LocalStorage
+            localStorage.setItem(storageKey, JSON.stringify(stampedDays));
+        }
+
+        function addStampElement(parent, animate) {
+            const stamp = document.createElement('div');
+            stamp.classList.add('stamp');
+            stamp.innerHTML = '❤'; // Changed to heart icon for the stamp too
+            if (!animate) stamp.style.animation = 'none';
+            parent.appendChild(stamp);
+        }
+
+        initHearts();
+        initCalendar();
+    </script>
+</body>
+</html>
