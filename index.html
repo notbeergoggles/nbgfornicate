@@ -97,6 +97,19 @@
         }
 
         @keyframes slam { 0% { transform: scale(4); opacity: 0; } 100% { transform: scale(1); opacity: 0.9; } }
+
+        /* Color for the new water droplet stamp */
+        .stamp.droplet {
+            background: #3498db; /* A pleasant water blue */
+            border-radius: 50% 50% 50% 5%; /* Slight teardrop shape */
+            transform: rotate(-45deg); /* Tilts it to look like a drop */
+        }
+        
+        /* Ensure the icon inside stays upright even if the container is tilted */
+        .stamp-icon {
+            transform: rotate(45deg); 
+            display: inline-block;
+        }
     </style>
 </head>
 <body>
@@ -192,12 +205,19 @@
                 document.querySelectorAll('.stamp').forEach(s => s.remove());
                 
                 Object.keys(data).forEach(dayNum => {
-                    if (data[dayNum]) {
+                    const stampType = data[dayNum];
+                    if (stampType) {
                         const cell = document.getElementById(`day-${dayNum}`);
                         if (cell) {
                             const s = document.createElement('div');
-                            s.className = 'stamp';
-                            s.innerHTML = '❤';
+                            s.className = `stamp ${stampType === 'droplet' ? 'droplet' : ''}`;
+                            
+                            // Create a wrapper for the icon to handle rotation
+                            const icon = document.createElement('span');
+                            icon.className = 'stamp-icon';
+                            icon.innerHTML = stampType === 'droplet' ? '💧' : '❤';
+                            
+                            s.appendChild(icon);
                             cell.appendChild(s);
                         }
                     }
@@ -211,15 +231,21 @@
             const dayRef = ref(db, `stamps/${year}/${month}/${dayNum}`);
             
             onValue(dayRef, (snap) => {
-                set(dayRef, snap.val() ? null : true);
+                const currentVal = snap.val(); // This will be null, 'heart', or 'droplet'
+                let newVal;
+        
+                if (!currentVal) {
+                    newVal = 'heart';
+                } else if (currentVal === 'heart') {
+                    newVal = 'droplet';
+                } else {
+                    newVal = null; // Remove stamp
+                }
+        
+                set(dayRef, newVal);
             }, { onlyOnce: true });
-
+        
             if (window.navigator.vibrate) window.navigator.vibrate(30);
-        };
-
-        window.changeMonth = (dir) => {
-            currentViewDate.setMonth(currentViewDate.getMonth() + dir);
-            renderCalendar();
         };
 
         // Floating Hearts Background Logic
