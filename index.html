@@ -77,6 +77,7 @@
             font-size: 1.1rem; cursor: pointer; position: relative;
             border: 1px solid #eee; transition: transform 0.1s;
             user-select: none; -webkit-tap-highlight-color: transparent;
+            overflow: hidden; /* This prevents the stamp from leaking out */
         }
 
         .day.today {
@@ -89,40 +90,39 @@
         .day.empty { background: transparent; border: none; cursor: default; }
 
         .stamp {
-            position: absolute; width: 65%; height: 65%;
+            position: absolute; 
+            top: 50%; left: 50%;
+            width: 80%; height: 80%; /* Smaller than the box */
+            transform: translate(-50%, -50%); /* Centers the stamp perfectly */
             background: var(--stamp-color); color: white;
             border-radius: 50%; display: flex; justify-content: center; align-items: center;
             animation: slam 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            pointer-events: none; opacity: 0.9; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            pointer-events: none; opacity: 0.9;
+            z-index: 2;
         }
 
-        @keyframes slam { 0% { transform: scale(4); opacity: 0; } 100% { transform: scale(1); opacity: 0.9; } }
+        @keyframes slam { 
+            0% { transform: translate(-50%, -50%) scale(4); opacity: 0; } 
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 0.9; } 
+        }
 
         /* Color and shape for the water droplet stamp */
         .stamp.droplet {
             background: #3498db;
-            /* This creates the teardrop: 3 round corners and 1 sharp one */
             border-radius: 50% 50% 50% 5%; 
-            /* We rotate the container to put the sharp point at the bottom */
-            transform: rotate(-45deg); 
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border: 2px solid rgba(255,255,255,0.4);
+            /* We use translate to center AND rotate for the shape */
+            transform: translate(-50%, -50%) rotate(-45deg); 
         }
         
         /* Fix the icon position */
         .stamp-icon {
-            /* We rotate the icon back 45deg so the emoji stays upright */
+            /* Counter-rotate the icon so it's upright */
             transform: rotate(45deg); 
             display: flex;
             justify-content: center;
             align-items: center;
-            /* Adjusting font-size slightly helps it fit the teardrop better */
-            font-size: 1.1rem; 
-            /* This nudge fixes the "offset" look caused by the teardrop tail */
-            margin-top: -2px;
-            margin-left: -2px;
+            font-size: 1.8rem; /* Make the icon bigger so it fills the stamp */
+            line-height: 1;
         }
     </style>
 </head>
