@@ -98,17 +98,31 @@
 
         @keyframes slam { 0% { transform: scale(4); opacity: 0; } 100% { transform: scale(1); opacity: 0.9; } }
 
-        /* Color for the new water droplet stamp */
+        /* Color and shape for the water droplet stamp */
         .stamp.droplet {
-            background: #3498db; /* A pleasant water blue */
-            border-radius: 50% 50% 50% 5%; /* Slight teardrop shape */
-            transform: rotate(-45deg); /* Tilts it to look like a drop */
+            background: #3498db;
+            /* This creates the teardrop: 3 round corners and 1 sharp one */
+            border-radius: 50% 50% 50% 5%; 
+            /* We rotate the container to put the sharp point at the bottom */
+            transform: rotate(-45deg); 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid rgba(255,255,255,0.4);
         }
         
-        /* Ensure the icon inside stays upright even if the container is tilted */
+        /* Fix the icon position */
         .stamp-icon {
+            /* We rotate the icon back 45deg so the emoji stays upright */
             transform: rotate(45deg); 
-            display: inline-block;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* Adjusting font-size slightly helps it fit the teardrop better */
+            font-size: 1.1rem; 
+            /* This nudge fixes the "offset" look caused by the teardrop tail */
+            margin-top: -2px;
+            margin-left: -2px;
         }
     </style>
 </head>
