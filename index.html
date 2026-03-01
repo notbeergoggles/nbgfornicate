@@ -196,10 +196,16 @@
         }
 
         function syncWithFirebase(year, month) {
-            if (activeUnsubscribe) off(ref(db, `stamps/${year}/${month}`));
-
             const monthRef = ref(db, `stamps/${year}/${month}`);
-            activeUnsubscribe = onValue(monthRef, (snapshot) => {
+
+                // If we were already listening to a month, stop it
+                if (activeUnsubscribe) {
+                    off(activeUnsubscribe); 
+                }
+            
+                // Store the current reference so we can 'off' it later
+                activeUnsubscribe = monthRef;
+            onValue(monthRef, (snapshot) => {
                 const data = snapshot.val() || {};
                 // Clear existing stamps in UI
                 document.querySelectorAll('.stamp').forEach(s => s.remove());
@@ -246,6 +252,14 @@
             }, { onlyOnce: true });
         
             if (window.navigator.vibrate) window.navigator.vibrate(30);
+        };
+
+        window.changeMonth = (dir) => {
+            // This shifts the date by +1 or -1 month
+            currentViewDate.setMonth(currentViewDate.getMonth() + dir);
+            
+            // This triggers the redraw of the days and the Firebase sync
+            renderCalendar();
         };
 
         // Floating Hearts Background Logic
