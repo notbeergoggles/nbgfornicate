@@ -2,122 +2,222 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>NotBeerGoggles Active Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #fff0f5;
-            --calendar-bg: rgba(255, 255, 255, 0.9);
-            --accent-color: #ff6b81;
-            --stamp-color: #ff4757;
+            --accent: #e8718a;
+            --accent-deep: #c84d6c;
+            --stamp-heart-1: #ff7a96;
+            --stamp-heart-2: #e8456b;
+            --stamp-drop-1: #6cc5f0;
+            --stamp-drop-2: #2f8fd6;
+            --ink: #5b3a44;
+            --ink-soft: #a98a93;
+            --glass: rgba(255, 255, 255, 0.55);
+            --cell: rgba(255, 255, 255, 0.78);
+            --hairline: rgba(255, 255, 255, 0.7);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            height: 100%;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            color: var(--ink);
+            -webkit-font-smoothing: antialiased;
+        }
 
         body {
-            background-color: var(--bg-color);
             overflow: hidden;
-            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+            background:
+                radial-gradient(120% 80% at 15% 0%, #fff1f6 0%, transparent 55%),
+                radial-gradient(120% 90% at 90% 100%, #f3e6ff 0%, transparent 50%),
+                linear-gradient(160deg, #ffe9f1 0%, #ffeef6 40%, #f6ecfb 100%);
         }
 
-        /* Floating Hearts Background */
-        .bg-animation { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
-        .heart { position: absolute; color: var(--accent-color); opacity: 0.3; animation: float 10s infinite linear; }
+        /* Ambient floating petals / hearts */
+        .bg-animation {
+            position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden;
+        }
+        .heart {
+            position: absolute; bottom: -8vh;
+            color: var(--accent);
+            opacity: 0;
+            filter: blur(0.3px);
+            animation: float linear infinite;
+            will-change: transform, opacity;
+        }
         @keyframes float {
-            0% { transform: translateY(110vh) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+            0%   { transform: translateY(0) rotate(0deg) scale(1); opacity: 0; }
+            12%  { opacity: 0.5; }
+            85%  { opacity: 0.5; }
+            100% { transform: translateY(-118vh) rotate(220deg) scale(1.1); opacity: 0; }
         }
 
         .calendar-container {
-            width: 95vw; height: 90vh;
-            background: var(--calendar-bg);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            position: relative;
+            width: min(94vw, 460px);
+            height: min(92vh, 820px);
+            background: var(--glass);
+            backdrop-filter: blur(22px) saturate(140%);
+            -webkit-backdrop-filter: blur(22px) saturate(140%);
+            border-radius: 30px;
+            border: 1px solid var(--hairline);
+            box-shadow:
+                0 1px 0 rgba(255,255,255,0.9) inset,
+                0 30px 60px -20px rgba(176, 88, 120, 0.45),
+                0 8px 24px -12px rgba(176, 88, 120, 0.35);
             display: flex; flex-direction: column;
-            padding: 15px; border: 2px solid white;
+            padding: 22px 18px 16px;
         }
 
         header {
-            display: flex;
-            justify-content: space-between;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
             align-items: center;
-            padding: 10px;
-            color: var(--accent-color);
+            gap: 10px;
+            padding: 4px 4px 18px;
+        }
+
+        .month-block { text-align: center; line-height: 1; }
+        #monthLabel {
+            font-family: 'Fraunces', serif;
+            font-weight: 500;
+            font-size: 1.7rem;
+            letter-spacing: 0.2px;
+            color: var(--ink);
+        }
+        #monthLabel .yr { color: var(--accent); font-style: italic; }
+        .month-sub {
+            margin-top: 5px;
+            font-size: 0.66rem;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--ink-soft);
+            font-weight: 600;
         }
 
         .nav-btn {
-            background: var(--accent-color);
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 10px;
+            width: 42px; height: 42px;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.65);
+            color: var(--accent-deep);
+            border: 1px solid var(--hairline);
+            border-radius: 50%;
             cursor: pointer;
-            font-weight: bold;
-            transition: opacity 0.2s;
+            font-size: 1rem;
+            box-shadow: 0 4px 12px -6px rgba(200,77,108,0.5);
+            transition: transform 0.15s ease, background 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
         }
-
-        .nav-btn:active { opacity: 0.7; }
+        .nav-btn:active { transform: scale(0.9); background: #fff; }
 
         .calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
             grid-template-rows: auto repeat(6, 1fr);
-            gap: 8px; flex-grow: 1;
+            gap: 7px;
+            flex-grow: 1;
+            min-height: 0;
         }
 
-        .day-name { font-weight: bold; text-align: center; color: #999; font-size: 0.8rem; padding: 5px 0; }
+        .day-name {
+            font-weight: 600; text-align: center;
+            color: var(--ink-soft);
+            font-size: 0.62rem; letter-spacing: 0.12em;
+            text-transform: uppercase;
+            padding-bottom: 2px;
+            align-self: center;
+        }
 
         .day {
-            background: white; border-radius: 12px;
+            background: var(--cell);
+            border-radius: 15px;
             display: flex; justify-content: center; align-items: center;
-            font-size: 1.1rem; cursor: pointer; position: relative;
-            border: 1px solid #eee; transition: transform 0.1s;
+            font-size: 0.98rem; font-weight: 500;
+            color: var(--ink);
+            cursor: pointer; position: relative;
+            border: 1px solid rgba(255,255,255,0.85);
+            box-shadow: 0 2px 6px -4px rgba(150,90,110,0.4);
+            transition: transform 0.12s ease;
             user-select: none; -webkit-tap-highlight-color: transparent;
-            overflow: hidden; /* This prevents the stamp from leaking out */
+            overflow: hidden;
         }
+        .day:active { transform: scale(0.93); }
 
         .day.today {
-            border: 2px solid var(--accent-color);
-            background-color: #fff5f6;
-            color: var(--accent-color);
-            font-weight: 900;
+            background: linear-gradient(160deg, #fff 0%, #ffe6ee 100%);
+            color: var(--accent-deep);
+            font-weight: 700;
+            border: 1px solid rgba(232,113,138,0.55);
+            box-shadow:
+                0 0 0 2px rgba(232,113,138,0.25),
+                0 6px 14px -6px rgba(200,77,108,0.55);
+        }
+        .day.today::after {
+            content: ""; position: absolute; bottom: 6px;
+            width: 4px; height: 4px; border-radius: 50%;
+            background: var(--accent);
         }
 
-        .day.empty { background: transparent; border: none; cursor: default; }
+        .day.empty {
+            background: transparent; border: none; box-shadow: none; cursor: default;
+        }
 
         .stamp {
-            position: absolute; 
-            top: 50%; left: 50%;
-            width: 80%; height: 80%; /* Smaller than the box */
-            transform: translate(-50%, -50%); /* Centers the stamp perfectly */
-            background: var(--stamp-color); color: white;
-            border-radius: 50%; display: flex; justify-content: center; align-items: center;
-            animation: slam 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            pointer-events: none; opacity: 0.9;
-            z-index: 2;
+            position: absolute; top: 50%; left: 50%;
+            width: 78%; height: 78%;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle at 35% 30%, var(--stamp-heart-1), var(--stamp-heart-2));
+            color: white;
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 6px 14px -5px rgba(232,69,107,0.65),
+                        0 0 0 4px rgba(255,255,255,0.35);
+            animation: slam 0.34s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none; z-index: 2;
+        }
+        @keyframes slam {
+            0%   { transform: translate(-50%, -50%) scale(3.2) rotate(-12deg); opacity: 0; }
+            60%  { opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
         }
 
-        @keyframes slam { 
-            0% { transform: translate(-50%, -50%) scale(4); opacity: 0; } 
-            100% { transform: translate(-50%, -50%) scale(1); opacity: 0.9; } 
-        }
-
-        /* Color and shape for the water droplet stamp */
         .stamp.droplet {
-            background: #3498db;
+            background: radial-gradient(circle at 35% 30%, var(--stamp-drop-1), var(--stamp-drop-2));
+            box-shadow: 0 6px 14px -5px rgba(47,143,214,0.65),
+                        0 0 0 4px rgba(255,255,255,0.35);
         }
-        
-        /* Fix the icon position */
+
         .stamp-icon {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.8rem; /* Make the icon bigger so it fills the stamp */
-            line-height: 1;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.25rem; line-height: 1;
+            filter: drop-shadow(0 1px 1px rgba(0,0,0,0.18));
+        }
+
+        footer {
+            display: flex; justify-content: center; gap: 18px;
+            padding-top: 14px;
+            font-size: 0.72rem; color: var(--ink-soft); font-weight: 500;
+        }
+        footer .tally { display: inline-flex; align-items: center; gap: 6px; }
+        footer .dot { width: 9px; height: 9px; border-radius: 50%; }
+        footer .dot.h { background: linear-gradient(160deg, var(--stamp-heart-1), var(--stamp-heart-2)); }
+        footer .dot.d { background: linear-gradient(160deg, var(--stamp-drop-1), var(--stamp-drop-2)); }
+        footer b { color: var(--ink); font-weight: 700; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .heart { display: none; }
+            .stamp { animation: none; }
+            .day:active, .nav-btn:active { transform: none; }
         }
     </style>
 </head>
@@ -127,12 +227,18 @@
 
     <div class="calendar-container">
         <header>
-            <button class="nav-btn" onclick="changeMonth(-1)">❮</button>
-            <h2 id="monthLabel">Month Year</h2>
-            <button class="nav-btn" onclick="changeMonth(1)">❯</button>
-        </header>
-        <div class="calendar-grid" id="grid">
+            <button class="nav-btn" onclick="changeMonth(-1)" aria-label="Previous month">❮</button>
+            <div class="month-block">
+                <div id="monthLabel">Month Year</div>
+                <div class="month-sub">Active Tracker</div>
             </div>
+            <button class="nav-btn" onclick="changeMonth(1)" aria-label="Next month">❯</button>
+        </header>
+        <div class="calendar-grid" id="grid"></div>
+        <footer>
+            <span class="tally"><span class="dot h"></span><b id="tallyHeart">0</b> hearts</span>
+            <span class="tally"><span class="dot d"></span><b id="tallyDrop">0</b> droplets</span>
+        </footer>
     </div>
 
     <script type="module">
@@ -151,14 +257,14 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        
+
         let currentViewDate = new Date(); // Tracks what month we are looking at
         let activeUnsubscribe = null; // To clean up Firebase listeners when switching months
 
         function renderCalendar() {
             const grid = document.getElementById('grid');
             const monthLabel = document.getElementById('monthLabel');
-            
+
             // Clear current grid
             grid.innerHTML = '';
             const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -166,8 +272,9 @@
 
             const year = currentViewDate.getFullYear();
             const month = currentViewDate.getMonth();
-            
-            monthLabel.innerText = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(currentViewDate);
+
+            const monthName = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(currentViewDate);
+            monthLabel.innerHTML = `${monthName} <span class="yr">${year}</span>`;
 
             // First day of month (0-6)
             const firstDay = new Date(year, month, 1).getDay();
@@ -186,16 +293,16 @@
                 dayDiv.className = 'day';
                 dayDiv.innerText = i;
                 dayDiv.id = `day-${i}`;
-                
+
                 // Check if i is actually "Today"
-                const isToday = i === today.getDate() && 
-                                month === today.getMonth() && 
+                const isToday = i === today.getDate() &&
+                                month === today.getMonth() &&
                                 year === today.getFullYear();
-            
+
                 if (isToday) {
                     dayDiv.classList.add('today');
                 }
-            
+
                 dayDiv.onclick = () => toggleStamp(i);
                 grid.appendChild(dayDiv);
             }
@@ -209,34 +316,40 @@
 
                 // If we were already listening to a month, stop it
                 if (activeUnsubscribe) {
-                    off(activeUnsubscribe); 
+                    off(activeUnsubscribe);
                 }
-            
+
                 // Store the current reference so we can 'off' it later
                 activeUnsubscribe = monthRef;
             onValue(monthRef, (snapshot) => {
                 const data = snapshot.val() || {};
                 // Clear existing stamps in UI
                 document.querySelectorAll('.stamp').forEach(s => s.remove());
-                
+
+                let heartCount = 0, dropCount = 0;
+
                 Object.keys(data).forEach(dayNum => {
                     const stampType = data[dayNum];
                     if (stampType) {
+                        if (stampType === 'droplet') dropCount++; else heartCount++;
                         const cell = document.getElementById(`day-${dayNum}`);
                         if (cell) {
                             const s = document.createElement('div');
                             s.className = `stamp ${stampType === 'droplet' ? 'droplet' : ''}`;
-                            
+
                             // Create a wrapper for the icon to handle rotation
                             const icon = document.createElement('span');
                             icon.className = 'stamp-icon';
                             icon.innerHTML = stampType === 'droplet' ? '💧' : '❤';
-                            
+
                             s.appendChild(icon);
                             cell.appendChild(s);
                         }
                     }
                 });
+
+                document.getElementById('tallyHeart').innerText = heartCount;
+                document.getElementById('tallyDrop').innerText = dropCount;
             });
         }
 
@@ -244,11 +357,11 @@
             const year = currentViewDate.getFullYear();
             const month = currentViewDate.getMonth();
             const dayRef = ref(db, `stamps/${year}/${month}/${dayNum}`);
-            
+
             onValue(dayRef, (snap) => {
                 const currentVal = snap.val(); // This will be null, 'heart', or 'droplet'
                 let newVal;
-        
+
                 if (!currentVal) {
                     newVal = 'heart';
                 } else if (currentVal === 'heart') {
@@ -256,29 +369,32 @@
                 } else {
                     newVal = null; // Remove stamp
                 }
-        
+
                 set(dayRef, newVal);
             }, { onlyOnce: true });
-        
+
             if (window.navigator.vibrate) window.navigator.vibrate(30);
         };
 
         window.changeMonth = (dir) => {
             // This shifts the date by +1 or -1 month
             currentViewDate.setMonth(currentViewDate.getMonth() + dir);
-            
+
             // This triggers the redraw of the days and the Firebase sync
             renderCalendar();
         };
 
-        // Floating Hearts Background Logic
+        // Floating petals / hearts background
         const bg = document.getElementById('bgLayer');
-        for (let i = 0; i < 15; i++) {
+        const glyphs = ['❤', '❤', '🌸', '✿'];
+        for (let i = 0; i < 16; i++) {
             const h = document.createElement('div');
-            h.className = 'heart'; h.innerHTML = '❤';
+            h.className = 'heart';
+            h.innerHTML = glyphs[Math.floor(Math.random() * glyphs.length)];
             h.style.left = Math.random() * 100 + 'vw';
-            h.style.animationDuration = (Math.random() * 5 + 7) + 's';
-            h.style.animationDelay = (Math.random() * 5) + 's';
+            h.style.fontSize = (Math.random() * 16 + 10) + 'px';
+            h.style.animationDuration = (Math.random() * 8 + 12) + 's';
+            h.style.animationDelay = (Math.random() * 10) + 's';
             bg.appendChild(h);
         }
 
